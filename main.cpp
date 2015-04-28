@@ -24,6 +24,9 @@ struct CloseHandleDeleter {
 
 typedef std::unique_ptr<HANDLE, CloseHandleDeleter> Handle;
 
+inline size_t RoundToAlign(size_t size, size_t align) {
+	return (size + align - 1) & ~(align - 1);
+}
 
 typedef std::function<int(const PROCESSENTRY32* pe)> EnumProcFunc;
 
@@ -116,6 +119,38 @@ int ParseCmdOpt(CmdOpt& opt, int argc, char* argv[]) {
 }
 
 
+typedef DWORD (WINAPI *GetLastErrorFunc)(VOID);
+typedef HMODULE (WINAPI *LoadLibraryFunc)(LPCSTR lpLibFileName);
+
+struct LoadDllThreadData {
+
+	// input
+	LoadLibraryFunc LoadLibrary;
+	GetLastErrorFunc GetLastError;
+	CHAR* DllName;
+
+	// output
+	HMODULE ModuleHandle;
+	DWORD LastError;
+
+};
+
+// Hack!
+// This is function to used in remote thread to load dll
+// Todo: rewrite to opcode/shellcode
+static void RemoteLoadDllFunction(LoadDllThreadData* data) {
+
+	data->ModuleHandle = data->LoadLibrary(data->DllName);
+	data->LastError = data->GetLastError();
+
+}
+
+// This is just a dummy function used to determine size of RemoteLoadDllFunction code
+static void RemoteLoadDllFunctionEnd() {
+	return;
+}
+
+
 int main(int argc, char* argv[]) {
 
 	try {
@@ -155,17 +190,11 @@ int main(int argc, char* argv[]) {
 		std::cout << "Process opened, handle: " << proc.get() << std::endl;
 
 
-		FARPROC LoadLibraryAddress = ::GetProcAddress(::GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-		if (!LoadLibraryAddress)
-			throw std::runtime_error("Error locate \"LoadLibrary\" function");
-
-		std::cout << "Function LoadLibrary located, address: " << LoadLibraryAddress << std::endl;
-
-
-		const size_t size = cmd.dll.size() + 1;
+		const size_t sizeData = RoundToAlign(sizeof(LoadDllThreadData) + cmd.dll.size() + 1, 16);
+		const size_t sizeCode = reinterpret_cast<size_t>(RemoteLoadDllFunctionEnd) - reinterpret_cast<size_t>(RemoteLoadDllFunction);
 
 		std::shared_ptr<void> mem(
-			::VirtualAllocEx(proc.get(), nullptr, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE),
+				::VirtualAllocEx(proc.get(), nullptr, sizeData + sizeCode, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE),
 			[&](void* p) { ::VirtualFreeEx(proc.get(), p, 0, MEM_RELEASE); }
 		);
 
@@ -174,15 +203,43 @@ int main(int argc, char* argv[]) {
 
 		std::cout << "Memory in remote process allocated, address: " << mem.get() << std::endl;
 
-		BOOL ret = ::WriteProcessMemory(proc.get(), mem.get(), cmd.dll.c_str(), size, nullptr);
+		// for friendlly pointer aritmetic without casting ;)
+		char* memory = reinterpret_cast<char*>(mem.get());
+
+		LoadDllThreadData data;
+
+		data.LoadLibrary = reinterpret_cast<LoadLibraryFunc>(
+			::GetProcAddress(::GetModuleHandle("kernel32.dll"), "LoadLibraryA")
+		);
+
+		data.GetLastError = reinterpret_cast<GetLastErrorFunc>(
+			::GetProcAddress(::GetModuleHandle("kernel32.dll"), "GetLastError")
+		);
+
+		data.DllName = memory + sizeof(LoadDllThreadData);
+
+		data.ModuleHandle = nullptr;
+		data.LastError = 0;
+
+		BOOL ret = ::WriteProcessMemory(proc.get(), memory, &data, sizeof(data), nullptr);
 		if (!ret)
 			throw std::runtime_error("Error write to remote process memory");
 
-		std::cout << "Path to dll written in remote process memory" << std::endl;
+		ret = ::WriteProcessMemory(proc.get(), memory + sizeof(LoadDllThreadData), cmd.dll.c_str(), cmd.dll.size() + 1, nullptr);
+		if (!ret)
+			throw std::runtime_error("Error write to remote process memory");
+
+		std::cout << "Data written in remote process memory" << std::endl;
+
+		ret = ::WriteProcessMemory(proc.get(), memory + sizeData, RemoteLoadDllFunction, sizeCode, nullptr);
+		if (!ret)
+			throw std::runtime_error("Error write to remote process memory");
+
+		std::cout << "Code written in remote process memory" << std::endl;
 
 
 		Handle thread(
-			::CreateRemoteThread(proc.get(), nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(LoadLibraryAddress), mem.get(), 0, nullptr)
+			::CreateRemoteThread(proc.get(), nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(memory + sizeData), memory, 0, nullptr)
 		);
 
 		if (!thread)
@@ -196,14 +253,16 @@ int main(int argc, char* argv[]) {
 		if (::WaitForSingleObject(thread.get(), INFINITE) == WAIT_FAILED)
 			throw std::runtime_error("Error wait for thread");
 
-		DWORD excode = 0;
-		::GetExitCodeThread(thread.get(), &excode);
-		std::cout << "Thread finish, exit with code: " << excode << std::endl;
+		std::cout << "Thread finish" << std::endl;
 
-		if (!excode)
-			std::cout << "DLL not injected! LoadLibrary failed!" << std::endl;
+		ret = ::ReadProcessMemory(proc.get(), memory, &data, sizeof(data), nullptr);
+		if (!ret)
+			throw std::runtime_error("Error read from remote process memory");
+
+		if (!data.ModuleHandle)
+			std::cout << "DLL not injected! LoadLibrary failed with code: " << data.LastError << std::endl;
 		else
-			std::cout << "DLL successfully injected, handle: " << excode << std::endl;
+			std::cout << "DLL successfully injected, handle: " << data.ModuleHandle << std::endl;
 
 	} catch (std::exception& e) {
 		std::cerr << e.what() << "\n" << "Error code: " << ::GetLastError() << std::endl;
