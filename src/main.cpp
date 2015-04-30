@@ -3,8 +3,9 @@
  * http://github.com/malcom/syringe
  *
  * Copyright (C) 2015 Marcin 'Malcom' Malich <me@malcom.pl>
- *
  * Released under the MIT License.
+ *
+ * See README.md and LICENSE.md for more info.
  */
 
 #include <iostream>
@@ -16,6 +17,8 @@
 #include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
+
+#include "version.h"
 
 struct CloseHandleDeleter {
 	typedef HANDLE pointer;
@@ -100,7 +103,7 @@ int ParseCmdOpt(CmdOpt& opt, int argc, char* argv[]) {
 
 	if (argc != 3) {
 		std::cout
-			<< "syringe v0.1\n"
+			<< "syringe " << VersionString << "\n"
 			<< "usage: syringe <proc-pid-or-name> <dll-name>"
 			<< std::endl;
 		return 1;
