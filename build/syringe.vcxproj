@@ -11,11 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\defs.h" />
-    <ClInclude Include="..\src\version.h" />
+    <ClCompile Include="..\src\cmd\command.cpp" />
+    <ClCompile Include="..\src\cmd\dll.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\main.cpp" />
+    <ClInclude Include="..\src\cmd\command.h" />
+    <ClInclude Include="..\src\cmd\dll.h" />
+    <ClInclude Include="..\src\defs.h" />
+    <ClInclude Include="..\src\types.h" />
+    <ClInclude Include="..\src\utils.h" />
+    <ClInclude Include="..\src\version.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32F3B5CC-CCFE-486F-AFDD-A65A443B5075}</ProjectGuid>

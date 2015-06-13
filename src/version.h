@@ -17,6 +17,8 @@
 #define SYRINGE_VERSION_MINOR	1
 #define SYRINGE_VERSION_RELEASE	0
 
+namespace syringe {
+
 const unsigned int VersionNumber =
 	((SYRINGE_VERSION_MAJOR   & 0xFF)   << 24) |
 	((SYRINGE_VERSION_MINOR   & 0x0FFF) << 12) |
@@ -26,5 +28,7 @@ const char* VersionString =
 	SYRINGE_STR_M(SYRINGE_VERSION_MAJOR) "." \
 	SYRINGE_STR_M(SYRINGE_VERSION_MINOR) "." \
 	SYRINGE_STR_M(SYRINGE_VERSION_RELEASE);
+
+} // namespace syringe
 
 #endif // SYRINGE_VERSION_H

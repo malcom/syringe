@@ -11,7 +11,14 @@
 #ifndef SYRINGE_DEFS_H
 #define SYRINGE_DEFS_H
 
+// disable annoying warnings
+#pragma warning(disable: 4512) // assignment operator could not be generated
+
+// stringize macros
 #define SYRINGE_STR(x)		#x
 #define SYRINGE_STR_M(x)	SYRINGE_STR(x)
+
+// some common spacial types
+#include "types.h"
 
 #endif // SYRINGE_DEFS_H

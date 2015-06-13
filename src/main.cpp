@@ -8,269 +8,155 @@
  * See README.md and LICENSE.md for more info.
  */
 
-#include <iostream>
-#include <string>
-#include <memory>
-#include <functional>
-#include <cstring>
+#include "defs.h"
 
-#include <windows.h>
-#include <psapi.h>
-#include <tlhelp32.h>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <sstream>
+
+#include <boost/program_options.hpp>
 
 #include "version.h"
+#include "cmd/command.h"
 
-struct CloseHandleDeleter {
-	typedef HANDLE pointer;
-	void operator()(HANDLE handle) const { ::CloseHandle(handle); }
-};
+namespace {
 
-typedef std::unique_ptr<HANDLE, CloseHandleDeleter> Handle;
+using syringe::cmd::Command;
+using syringe::cmd::Commands;
 
-inline size_t RoundToAlign(size_t size, size_t align) {
-	return (size + align - 1) & ~(align - 1);
-}
+void ShowAvailableCommands(std::ostream& out) {
 
-typedef std::function<int(const PROCESSENTRY32* pe)> EnumProcFunc;
-
-int EnumProcesses(EnumProcFunc func) {
-
-	Handle snapshot(
-		::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
-	);
-
-	if (snapshot.get() == INVALID_HANDLE_VALUE)
-		throw std::logic_error("Error open process snapshot");
-
-	PROCESSENTRY32 pe = { 0 };
-	pe.dwSize = sizeof(PROCESSENTRY32);
-
-	BOOL ret = ::Process32First(snapshot.get(), &pe);
-	while (ret) {
-
-		if (func(&pe) != 0)
-			return 1;
-
-		ret = ::Process32Next(snapshot.get(), &pe);
-	}
-
-	return 0;
-}
-
-int GetProcessId(const std::string& name) {
-
-	int pid = 0;
-
-	EnumProcesses([&](const PROCESSENTRY32* pe) {
-
-		if (_stricmp(pe->szExeFile, name.c_str()) == 0) {
-			pid = pe->th32ProcessID;
-			return 1;
-		}
-		return 0;
-
+	out << "Available commands:\n";
+	Commands::Iterate([&](const Command* cmd) {
+		out << "  " << std::setw(8) << std::left << cmd->Name() << cmd->Desc() << "\n";
 	});
 
-	return pid;
 }
 
-std::string GetProcessName(int pid) {
-
-	std::string name;
-
-	EnumProcesses([&](const PROCESSENTRY32* pe) {
-
-		if (pe->th32ProcessID == static_cast<unsigned int>(pid)) {
-			name.assign(pe->szExeFile);
-			return 1;
-		}
-		return 0;
-
-	});
-
-	return name;
-}
-
-// Todo: rewrite to use boost-options
-
-struct CmdOpt {
-	unsigned int pid;
-	std::string name;
-	std::string dll;
+class invalid_command : public po::error_with_option_name {
+public:
+	invalid_command(const std::string& name = "")
+		: po::error_with_option_name("", "", name) {}
+	~invalid_command() throw() {}
 };
 
-int ParseCmdOpt(CmdOpt& opt, int argc, char* argv[]) {
-
-	if (argc != 3) {
-		std::cout
-			<< "syringe " << VersionString << "\n"
-			<< "usage: syringe <proc-pid-or-name> <dll-name>"
-			<< std::endl;
-		return 1;
-	}
-
-	char* end;
-	opt.pid = std::strtoul(argv[1], &end, 10);
-	if (argv[1] == end) {
-		opt.pid = 0;
-		opt.name = argv[1];
-	}
-
-	opt.dll = argv[2];
-
-	return 0;
-}
+} // anonymous namespace
 
 
-typedef DWORD (WINAPI *GetLastErrorFunc)(VOID);
-typedef HMODULE (WINAPI *LoadLibraryFunc)(LPCSTR lpLibFileName);
-
-struct LoadDllThreadData {
-
-	// input
-	LoadLibraryFunc LoadLibrary;
-	GetLastErrorFunc GetLastError;
-	CHAR* DllName;
-
-	// output
-	HMODULE ModuleHandle;
-	DWORD LastError;
-
-};
-
-// Hack!
-// This is function to used in remote thread to load dll
-// Todo: rewrite to opcode/shellcode
-static void RemoteLoadDllFunction(LoadDllThreadData* data) {
-
-	data->ModuleHandle = data->LoadLibrary(data->DllName);
-	data->LastError = data->GetLastError();
-
-}
-
-// This is just a dummy function used to determine size of RemoteLoadDllFunction code
-static void RemoteLoadDllFunctionEnd() {
-	return;
-}
-
-
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 
 	try {
+		
+		using namespace syringe;
+		using syringe::cmd::Command;
+		using syringe::cmd::Commands;
 
-		std::cout << std::hex << std::uppercase;
+		namespace po = boost::program_options;
 
-		CmdOpt cmd;
-		if (ParseCmdOpt(cmd, argc, argv) != 0)
-			return 1;
+		po::options_description global("Global options");
+		global.add_options()
+			("help,h", "Display help message\n" "If 'command' is given, print the command specific help")
+			("version,v", "Display the version number")
+			("list", "Display available commands")
+			("command", po::value<std::string>(), "Command to execute")
+			("subargs", po::value<std::vector<std::string>>(), "Arguments for command");
 
-		if (cmd.pid == 0)
-			cmd.pid = GetProcessId(cmd.name);
+		po::positional_options_description pos;
+		pos.add("command", 1).
+			add("subargs", -1);
 
-		if (cmd.pid == 0)
-			throw std::runtime_error("Error find specified process");
+		po::variables_map vm;
 
-		if (cmd.name.empty())
-			cmd.name = GetProcessName(cmd.pid);
+		po::parsed_options parsed = po::command_line_parser(argc, argv).
+			options(global).
+			positional(pos).
+			allow_unregistered().
+			run();
 
-		if (cmd.name.empty())
-			throw std::runtime_error("Error find specified process");
+		po::store(parsed, vm);
 
-		std::cout
-			<< "PID:  " << std::dec << cmd.pid << std::hex << "\n"
-			<< "Name: " << cmd.name << "\n"
-			<< "DLL:  " << cmd.dll << "\n"
-			<< std::endl;
+		std::string cmd;
+		if (vm.count("command"))
+			cmd = vm["command"].as<std::string>();
 
+		Command* command = Commands::Get(cmd);
 
-		Handle proc(
-			::OpenProcess(PROCESS_ALL_ACCESS, FALSE, cmd.pid)
-		);
+		#define APPPROLOG	"Syringe - A general purpose code injector tool"
 
-		if (!proc)
-			throw std::runtime_error("Error open process");
+		if (vm.count("help")) {
+			if (cmd.empty()) {
+				// global help message
 
-		std::cout << "Process opened, handle: " << proc.get() << std::endl;
+				std::cout << APPPROLOG << "\n";
+				std::cout << "Usage: syringe [options] <command> [subargs...]" << "\n\n";
+				std::cout << global << "\n";
+				ShowAvailableCommands(std::cout);
+				std::cout << "\n";
 
+				std::cout << "Copyright (C) 2015 Marcin 'Malcom' Malich <me@malcom.pl>" << "\n";
+				std::cout << "Released under the MIT License" << "\n";
+				std::cout << "http://github.com/malcom/syringe" << "\n";
 
-		const size_t sizeData = RoundToAlign(sizeof(LoadDllThreadData) + cmd.dll.size() + 1, 16);
-		const size_t sizeCode = reinterpret_cast<size_t>(RemoteLoadDllFunctionEnd) - reinterpret_cast<size_t>(RemoteLoadDllFunction);
+				return 0;
 
-		std::shared_ptr<void> mem(
-				::VirtualAllocEx(proc.get(), nullptr, sizeData + sizeCode, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE),
-			[&](void* p) { ::VirtualFreeEx(proc.get(), p, 0, MEM_RELEASE); }
-		);
+			} else {
+				// command help message
 
-		if (!mem)
-			throw std::runtime_error("Error alocate memory in remote process");
+				if (command == nullptr)
+					throw invalid_command(cmd);
+				std::cout << command->Help();
 
-		std::cout << "Memory in remote process allocated, address: " << mem.get() << std::endl;
+				return 0;
+			}
+		}
 
-		// for friendlly pointer aritmetic without casting ;)
-		char* memory = reinterpret_cast<char*>(mem.get());
+		if (vm.count("version")) {
+			std::cout << APPPROLOG << "\n";
+			std::cout << "Version: " << VersionString << "\n";
+			return 0;
+		}
 
-		LoadDllThreadData data;
+		if (vm.count("list")) {
+			ShowAvailableCommands(std::cout);
+			return 0;
+		}
 
-		data.LoadLibrary = reinterpret_cast<LoadLibraryFunc>(
-			::GetProcAddress(::GetModuleHandle("kernel32.dll"), "LoadLibraryA")
-		);
+		if (cmd.empty()) {
+			std::cout << APPPROLOG << "\n";
+			std::cout << "Type 'syringe --help' for more information" << "\n\n";
+			ShowAvailableCommands(std::cout);
+			return 0;
+		}
 
-		data.GetLastError = reinterpret_cast<GetLastErrorFunc>(
-			::GetProcAddress(::GetModuleHandle("kernel32.dll"), "GetLastError")
-		);
+		#undef APPPROLOG
 
-		data.DllName = memory + sizeof(LoadDllThreadData);
+		if (command == nullptr)
+			throw invalid_command(cmd);
 
-		data.ModuleHandle = nullptr;
-		data.LastError = 0;
+		Command::OptionsList opts = po::collect_unrecognized(parsed.options, po::include_positional);
+		opts.erase(opts.begin());	// erase command name
 
-		BOOL ret = ::WriteProcessMemory(proc.get(), memory, &data, sizeof(data), nullptr);
-		if (!ret)
-			throw std::runtime_error("Error write to remote process memory");
+		command->Parse(opts);
+		return command->Run();
 
-		ret = ::WriteProcessMemory(proc.get(), memory + sizeof(LoadDllThreadData), cmd.dll.c_str(), cmd.dll.size() + 1, nullptr);
-		if (!ret)
-			throw std::runtime_error("Error write to remote process memory");
+	} catch (invalid_command& e) {
+		std::cerr << "Invalid command: " << e.get_option_name() << "\n\n";
+		ShowAvailableCommands(std::cerr);
+		return 1;
 
-		std::cout << "Data written in remote process memory" << std::endl;
-
-		ret = ::WriteProcessMemory(proc.get(), memory + sizeData, RemoteLoadDllFunction, sizeCode, nullptr);
-		if (!ret)
-			throw std::runtime_error("Error write to remote process memory");
-
-		std::cout << "Code written in remote process memory" << std::endl;
-
-
-		Handle thread(
-			::CreateRemoteThread(proc.get(), nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(memory + sizeData), memory, 0, nullptr)
-		);
-
-		if (!thread)
-			throw std::runtime_error("Error create remote thread");
-
-		std::cout << "Remote thread created, handle: " << thread.get() << std::endl;
-
-
-		std::cout << "Waiting for thread finish..." << std::endl;
-
-		if (::WaitForSingleObject(thread.get(), INFINITE) == WAIT_FAILED)
-			throw std::runtime_error("Error wait for thread");
-
-		std::cout << "Thread finish" << std::endl;
-
-		ret = ::ReadProcessMemory(proc.get(), memory, &data, sizeof(data), nullptr);
-		if (!ret)
-			throw std::runtime_error("Error read from remote process memory");
-
-		if (!data.ModuleHandle)
-			std::cout << "DLL not injected! LoadLibrary failed with code: " << data.LastError << std::endl;
-		else
-			std::cout << "DLL successfully injected, handle: " << data.ModuleHandle << std::endl;
+	} catch (std::runtime_error& e) {
+		// TODO: this shoudl be changed
+		std::cerr << e.what() << "\n" << "Error code: " << ::GetLastError() << std::endl;
+		return 1;
 
 	} catch (std::exception& e) {
-		std::cerr << e.what() << "\n" << "Error code: " << ::GetLastError() << std::endl;
+		std::cerr << e.what() << std::endl;
+		return 1;
+
+	} catch (...) {
+		std::cerr << "Undefined error" << std::endl;
 		return 1;
 	}
 
-	return 0;
 }
