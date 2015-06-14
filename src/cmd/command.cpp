@@ -29,16 +29,14 @@ std::string Command::FormatHelpMessage(const std::string& usage, const OptionsDe
 	return ss.str();
 }
 
-Commands::CmdMap Commands::Map(Commands::Compare);
-
 Command* Commands::Get(const std::string& name) {
 
 	auto iter = std::find_if(
-		std::begin(Map), std::end(Map),
+		std::begin(Map()), std::end(Map()),
 		[&](CmdMap::value_type cmd) { return cmd->Name() == name; }
 	);
 
-	return iter != std::end(Map) ? *iter : nullptr;
+	return iter != std::end(Map()) ? *iter : nullptr;
 }
 
 } // namespace cmd

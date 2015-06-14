@@ -44,6 +44,7 @@ protected:
 
 
 class Commands {
+private:
 
 	static bool Compare(const Command* lhs, const Command* rhs) {
 		return lhs->Name() < rhs->Name();
@@ -51,23 +52,30 @@ class Commands {
 
 	typedef std::set<Command*, bool(*)(const Command*, const Command*)> CmdMap;
 
-	static CmdMap Map;
+	static CmdMap& Map() {
+		// to be sure that the CmdMap is aviable before any other static
+		// auto-register command object was initialized, so it can be
+		// static in global/class scope, where static initialization
+		// order depeneds of compiler
+		static CmdMap map(Commands::Compare);
+		return map;
+	}
 
 public:
 
 	static void Register(Command* cmd) {
-		Map.insert(cmd);
+		Map().insert(cmd);
 	}
 
 	static void Unregister(Command* cmd) {
-		Map.erase(cmd);
+		Map().erase(cmd);
 	}
 
 	static Command* Get(const std::string& name);
 
 	template<typename Func>
 	static void Iterate(Func func) {
-		std::for_each(std::begin(Map), std::end(Map), func);
+		std::for_each(std::begin(Map()), std::end(Map()), func);
 	}
 
 };
