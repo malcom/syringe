@@ -40,9 +40,9 @@ int EnumProcesses(EnumProcFunc func) {
 	return 0;
 }
 
-int GetProcessId(const std::string& name) {
+Pid GetProcessId(const std::string& name) {
 
-	int pid = 0;
+	int pid = INVALID_PID;
 
 	EnumProcesses([&](const PROCESSENTRY32* pe) {
 
@@ -57,13 +57,13 @@ int GetProcessId(const std::string& name) {
 	return pid;
 }
 
-std::string GetProcessName(int pid) {
+std::string GetProcessName(Pid pid) {
 
 	std::string name;
 
 	EnumProcesses([&](const PROCESSENTRY32* pe) {
 
-		if (pe->th32ProcessID == static_cast<unsigned int>(pid)) {
+		if (pe->th32ProcessID == pid) {
 			name.assign(pe->szExeFile);
 			return 1;
 		}

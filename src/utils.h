@@ -16,6 +16,8 @@
 
 #include <tlhelp32.h>
 
+#include "types.h"
+
 namespace syringe {
 namespace utils {
 
@@ -27,9 +29,9 @@ typedef std::function<int(const PROCESSENTRY32* pe)> EnumProcFunc;
 
 int EnumProcesses(EnumProcFunc func);
 
-int GetProcessId(const std::string& name);
+Pid GetProcessId(const std::string& name);
 
-std::string GetProcessName(int pid);
+std::string GetProcessName(Pid pid);
 
 } // namespace utils
 } // namespace syringe

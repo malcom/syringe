@@ -24,6 +24,10 @@ struct CloseHandleDeleter {
 
 typedef std::unique_ptr<HANDLE, CloseHandleDeleter> Handle;
 
+
+typedef unsigned int Pid;
+const Pid INVALID_PID = static_cast<Pid>(-1);
+
 } // namespace syringe
 
 #endif // SYRINGE_TYPES_H
