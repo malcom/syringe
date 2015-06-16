@@ -12,11 +12,12 @@
 #define SYRINGE_CMD_DLL_H
 
 #include "cmd/command.h"
+#include "cmd/base/processopts.h"
 
 namespace syringe {
 namespace cmd {
 
-class Dll : public Command {
+class Dll : public Command, private base::ProcessOpts {
 public:
 
 	Dll();

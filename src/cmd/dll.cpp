@@ -50,11 +50,11 @@ static void RemoteLoadDllFunctionEnd() {
 namespace syringe {
 namespace cmd {
 
-Dll::Dll() : Command() {
+Dll::Dll() {
+
+	AddOptions(m_optDesc);
 
 	m_optDesc.add_options()
-		("pid", po::value<int>(), "Process identifiator to inject into")
-		("name", po::value<std::string>(), "Process name to inject into")
 		("dll-name", po::value<std::string>()->required(), "DLL filename or path to inject")
 		;
 
@@ -71,11 +71,9 @@ void Dll::Parse(const OptionsList& opts) {
 		run();
 
 	po::store(parsed, m_optMap);
-
 	po::notify(m_optMap);
 
-	if (!m_optMap.count("pid") && !m_optMap.count("name"))
-		throw po::error("the option '--pid' or '--name' is required but missing");
+	NotifyOptions(m_optMap);
 
 }
 
@@ -83,33 +81,16 @@ int Dll::Run() {
 
 	std::cout << std::hex << std::uppercase;
 
-	int pid = 0;
-	std::string name;
 	const std::string& dll = m_optMap["dll-name"].as<std::string>();
 
-	if (!m_optMap.count("pid")) {
-		name = m_optMap["name"].as<std::string>();
-		pid = utils::GetProcessId(name);
-	}
-
-	if (pid == 0)
-		throw std::runtime_error("Error find specified process");
-
-	if (name.empty())
-		name = utils::GetProcessName(pid);
-
-	if (name.empty())
-		throw std::runtime_error("Error find specified process");
-
-	std::cout
-		<< "PID:  " << std::dec << pid << std::hex << "\n"
-		<< "Name: " << name << "\n"
-		<< "DLL:  " << dll << "\n"
-		<< std::endl;
-
+		std::cout
+			<< "PID:  " << std::dec << ProcessId() << std::hex << "\n"
+			<< "Name: " << ProcessName() << "\n"
+			<< "DLL:  " << dll << "\n"
+			<< std::endl;
 
 	Handle proc(
-		::OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid)
+		::OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessId())
 	);
 
 	if (!proc)
