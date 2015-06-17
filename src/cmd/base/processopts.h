@@ -49,6 +49,10 @@ public:
 
 	}
 
+	void Logo(std::ostream& stream) const {
+		stream << "Target process: " << "pid: " << std::dec << ProcessId() << std::hex << " name: " << ProcessName() << "\n";
+	}
+
 	Pid ProcessId() const {
 		return m_pid;
 	}

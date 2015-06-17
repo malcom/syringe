@@ -30,11 +30,8 @@ public:
 		return "Inject (load) dll into process";
 	}
 
-	std::string Help() const {
-		return FormatHelpMessage(
-			"Usage: syringe dll [options] <dll-name>", &m_optDesc
-		);
-	}
+	void Help(std::ostream& stream) const;
+	void Logo(std::ostream& stream) const;
 
 	void Parse(const OptionsList& opts);
 	int Run();

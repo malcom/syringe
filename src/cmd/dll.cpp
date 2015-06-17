@@ -60,6 +60,21 @@ Dll::Dll() {
 
 }
 
+void Dll::Help(std::ostream& stream) const {
+	DoFormatHelp(stream, "Usage: syringe dll [options] <dll-name>", &m_optDesc);
+}
+
+void Dll::Logo(std::ostream& stream) const {
+
+	Command::Logo(stream);
+
+	stream
+		<< "Target process: " << "pid: " << std::dec << ProcessId() << std::hex << " name: " << ProcessName() << "\n"
+		<< "Dll file: " << m_optMap["dll-name"].as<std::string>() << "\n"
+		<< std::endl;
+
+}
+
 void Dll::Parse(const OptionsList& opts) {
 
 	po::positional_options_description pos;
@@ -82,12 +97,6 @@ int Dll::Run() {
 	std::cout << std::hex << std::uppercase;
 
 	const std::string& dll = m_optMap["dll-name"].as<std::string>();
-
-		std::cout
-			<< "PID:  " << std::dec << ProcessId() << std::hex << "\n"
-			<< "Name: " << ProcessName() << "\n"
-			<< "DLL:  " << dll << "\n"
-			<< std::endl;
 
 	Handle proc(
 		::OpenProcess(PROCESS_ALL_ACCESS, FALSE, ProcessId())

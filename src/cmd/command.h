@@ -31,14 +31,21 @@ public:
 
 	virtual std::string Name() const = 0;
 	virtual std::string Desc() const = 0;
-	virtual std::string Help() const = 0;
+
+	virtual void Help(std::ostream& stream) const {
+		stream << "Command " << Name() << " - " << Desc() << "\n";
+	}
+
+	virtual void Logo(std::ostream& stream) const {
+		stream << "Syringe " << " - " << Desc() << "\n";
+	}
 
 	virtual void Parse(const OptionsList& /*opts*/) {}
 
 	virtual int Run() = 0;
 
 protected:
-	std::string FormatHelpMessage(const std::string& usage, const OptionsDesc* opts) const;
+	void DoFormatHelp(std::ostream& stream, const std::string& usage, const OptionsDesc* opts) const;
 
 };
 

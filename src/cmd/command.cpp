@@ -14,19 +14,15 @@
  namespace syringe {
  namespace cmd {
 
-std::string Command::FormatHelpMessage(const std::string& usage, const OptionsDesc* opts) const {
+void Command::DoFormatHelp(std::ostream& stream, const std::string& usage, const OptionsDesc* opts) const {
 
-	std::stringstream ss;
-
-	ss << "Command " << Name() << " - " << Desc() << "\n";
-	ss << usage << "\n\n";
+	stream << usage << "\n\n";
 
 	if (opts != nullptr) {
-		ss << "Command " << Name() << " options:" << "\n";
-		ss << *opts;
+		stream << "Command " << Name() << " options:" << "\n";
+		stream << *opts;
 	}
 
-	return ss.str();
 }
 
 Command* Commands::Get(const std::string& name) {

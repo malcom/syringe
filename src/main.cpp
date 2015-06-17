@@ -59,6 +59,7 @@ int main(int argc, const char* argv[]) {
 			("help,h", "Display help message\n" "If 'command' is given, print the command specific help")
 			("version,v", "Display the version number")
 			("list", "Display available commands")
+			("no-logo", "Don't display command info/logo on execution")
 			("command", po::value<std::string>(), "Command to execute")
 			("subargs", po::value<std::vector<std::string>>(), "Arguments for command");
 
@@ -105,7 +106,7 @@ int main(int argc, const char* argv[]) {
 
 				if (command == nullptr)
 					throw invalid_command(cmd);
-				std::cout << command->Help();
+				command->Help(std::cout);
 
 				return 0;
 			}
@@ -138,6 +139,10 @@ int main(int argc, const char* argv[]) {
 		opts.erase(opts.begin());	// erase command name
 
 		command->Parse(opts);
+
+		if (!vm.count("no-logo"))
+			command->Logo(std::cout);
+
 		return command->Run();
 
 	} catch (invalid_command& e) {
