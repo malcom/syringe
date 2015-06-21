@@ -13,6 +13,7 @@
 
 #include <windows.h>
 #include <memory>
+#include <vector>
 
 namespace syringe {
 
@@ -27,6 +28,10 @@ typedef std::unique_ptr<HANDLE, CloseHandleDeleter> Handle;
 
 typedef unsigned int Pid;
 const Pid INVALID_PID = static_cast<Pid>(-1);
+
+
+//typedef std::vector<unsigned char> CodeBuffer;
+class CodeBuffer : public std::vector<unsigned char> {};
 
 } // namespace syringe
 
