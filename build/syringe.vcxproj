@@ -16,6 +16,7 @@
     <ClInclude Include="..\src\cmd\code.h" />
     <ClInclude Include="..\src\cmd\command.h" />
     <ClInclude Include="..\src\cmd\dll.h" />
+    <ClInclude Include="..\src\cmd\exec.h" />
     <ClInclude Include="..\src\defs.h" />
     <ClInclude Include="..\src\types.h" />
     <ClInclude Include="..\src\utils.h" />
@@ -27,6 +28,7 @@
     <ClCompile Include="..\src\cmd\code.cpp" />
     <ClCompile Include="..\src\cmd\command.cpp" />
     <ClCompile Include="..\src\cmd\dll.cpp" />
+    <ClCompile Include="..\src\cmd\exec.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
     <ClCompile Include="..\src\utils\enc.cpp" />

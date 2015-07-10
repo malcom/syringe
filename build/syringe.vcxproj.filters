@@ -41,6 +41,9 @@
     <ClInclude Include="..\src\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\cmd\exec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\cmd\base\codeopts.cpp">
@@ -62,6 +65,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\exec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

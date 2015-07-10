@@ -29,9 +29,9 @@ namespace base {
 class CodeOpts {
 public:
 
-	void AddOptions(Command::OptionsDesc& desc) {
+	void AddOptions(Command::OptionsDesc& desc, bool inject = true) {
 		desc.add_options()
-			("code", po::value<CodeBuffer>(&m_code), "Code to inject")
+			("code", po::value<CodeBuffer>(&m_code), inject ? "Code to inject" : "Code to execute")
 			;
 	}
 
