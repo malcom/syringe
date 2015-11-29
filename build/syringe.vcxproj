@@ -21,6 +21,7 @@
     <ClInclude Include="..\src\types.h" />
     <ClInclude Include="..\src\utils.h" />
     <ClInclude Include="..\src\utils\enc.h" />
+    <ClInclude Include="..\src\utils\file.h" />
     <ClInclude Include="..\src\version.h" />
   </ItemGroup>
   <ItemGroup>

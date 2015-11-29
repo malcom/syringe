@@ -14,6 +14,9 @@
 // disable annoying warnings
 #pragma warning(disable: 4512) // assignment operator could not be generated
 
+// eliminate CRT deprecation warnings
+#define _CRT_SECURE_NO_WARNINGS
+
 // stringize macros
 #define SYRINGE_STR(x)		#x
 #define SYRINGE_STR_M(x)	SYRINGE_STR(x)

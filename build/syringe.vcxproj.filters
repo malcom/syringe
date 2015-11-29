@@ -44,6 +44,9 @@
     <ClInclude Include="..\src\cmd\exec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\utils\file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\cmd\base\codeopts.cpp">
