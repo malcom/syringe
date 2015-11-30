@@ -3,75 +3,81 @@
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>
+      </Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="Source Files\cmd">
+      <UniqueIdentifier>{7f41e6d0-371b-4a54-8485-9278962d213f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cmd\base">
+      <UniqueIdentifier>{82b4dde0-75b2-4512-a3f8-6c1ad29ca2ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{7b76424a-5900-4de4-9c1a-9004058f1c6f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\cmd\base\codeopts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\cmd\base\processopts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\cmd\code.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\cmd\command.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\cmd\dll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\utils\enc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\defs.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\types.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\utils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\version.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\code.h">
+      <Filter>Source Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\command.h">
+      <Filter>Source Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\dll.h">
+      <Filter>Source Files\cmd</Filter>
     </ClInclude>
     <ClInclude Include="..\src\cmd\exec.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\base\codeopts.h">
+      <Filter>Source Files\cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\base\processopts.h">
+      <Filter>Source Files\cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utils\enc.h">
+      <Filter>Source Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\src\utils\file.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\cmd\base\codeopts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cmd\code.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cmd\command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cmd\dll.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\utils\enc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cmd\code.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\command.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\dll.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\cmd\exec.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\base\codeopts.cpp">
+      <Filter>Source Files\cmd\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utils\enc.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
