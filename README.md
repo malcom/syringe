@@ -6,6 +6,7 @@ Currently available commands:
   code    Inject code into process
   dll     Inject (load) dll into process
   exec    Execute code
+  patch   Patch file
 ```
 
 ### Note

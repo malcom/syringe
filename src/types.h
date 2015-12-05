@@ -35,4 +35,26 @@ class CodeBuffer : public std::vector<unsigned char> {};
 
 } // namespace syringe
 
+// TODO: move to utils
+// computes the count of any array
+// C++ version of old-style macro
+#define countof( array ) sizeof(array)/sizeof(array[0])
+
+//template <typename T, std::size_t N>
+//constexpr std::size_t countof(T const (&)[N]) /*noexcept*/ {
+//	return N;
+//}
+
+// cast from enum type to underlying type
+template<typename T, typename U = std::underlying_type<T>::type>
+U enum_cast(T v) {
+	return static_cast<U>(v);
+}
+
+// cast from underlying type to enum type
+template<typename T, typename U = std::underlying_type<T>::type>
+T underlying_cast(U v) {
+	return static_cast<T>(v);
+}
+
 #endif // SYRINGE_TYPES_H

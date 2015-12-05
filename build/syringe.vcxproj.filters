@@ -15,6 +15,9 @@
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{7b76424a-5900-4de4-9c1a-9004058f1c6f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\cmd\patch">
+      <UniqueIdentifier>{c932435f-870b-4997-ae03-021712ac8e99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\defs.h">
@@ -53,6 +56,18 @@
     <ClInclude Include="..\src\utils\file.h">
       <Filter>Source Files\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\cmd\patch.h">
+      <Filter>Source Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\patch\format.h">
+      <Filter>Source Files\cmd\patch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\patch\provider.h">
+      <Filter>Source Files\cmd\patch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cmd\patch\applicator.h">
+      <Filter>Source Files\cmd\patch</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -78,6 +93,18 @@
     </ClCompile>
     <ClCompile Include="..\src\utils\enc.cpp">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\patch.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\patch\format.cpp">
+      <Filter>Source Files\cmd\patch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\patch\provider.cpp">
+      <Filter>Source Files\cmd\patch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cmd\patch\applicator.cpp">
+      <Filter>Source Files\cmd\patch</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

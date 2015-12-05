@@ -17,6 +17,10 @@
     <ClInclude Include="..\src\cmd\command.h" />
     <ClInclude Include="..\src\cmd\dll.h" />
     <ClInclude Include="..\src\cmd\exec.h" />
+    <ClInclude Include="..\src\cmd\patch.h" />
+    <ClInclude Include="..\src\cmd\patch\applicator.h" />
+    <ClInclude Include="..\src\cmd\patch\format.h" />
+    <ClInclude Include="..\src\cmd\patch\provider.h" />
     <ClInclude Include="..\src\defs.h" />
     <ClInclude Include="..\src\types.h" />
     <ClInclude Include="..\src\utils.h" />
@@ -30,6 +34,10 @@
     <ClCompile Include="..\src\cmd\command.cpp" />
     <ClCompile Include="..\src\cmd\dll.cpp" />
     <ClCompile Include="..\src\cmd\exec.cpp" />
+    <ClCompile Include="..\src\cmd\patch.cpp" />
+    <ClCompile Include="..\src\cmd\patch\applicator.cpp" />
+    <ClCompile Include="..\src\cmd\patch\format.cpp" />
+    <ClCompile Include="..\src\cmd\patch\provider.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
     <ClCompile Include="..\src\utils\enc.cpp" />
