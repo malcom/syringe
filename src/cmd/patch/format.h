@@ -24,6 +24,7 @@ enum class PatchFormat : int {
 enum class TargetFormat : int {
 	Unknown,
 	Binary,
+	IntelHEX,
 	FormatMax
 };
 

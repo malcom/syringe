@@ -78,6 +78,7 @@ struct FormatTrait<TargetFormat> {
 const char* const FormatTrait<TargetFormat>::Strings[] = {
 	"unknown",
 	"binary",
+	"IntelHEX",
 };
 
 
