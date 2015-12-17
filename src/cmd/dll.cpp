@@ -31,20 +31,33 @@ struct LoadDllThreadData {
 
 };
 
-// Hack!
-// This is function to used in remote thread to load dll
-// Todo: rewrite to opcode/shellcode
-static void RemoteLoadDllFunction(LoadDllThreadData* data) {
+//
+// This is a code of function used in remote thread to load dll:
+//
+// void RemoteLoadDllFunction(LoadDllThreadData* data) {
+//	 data->ModuleHandle = data->LoadLibrary(data->DllName);
+//	 data->LastError = data->GetLastError();
+// }
+//
+unsigned char RemoteLoadDllFunctionCode[] = {
+	0x55,				// push ebp
+	0x8b, 0xec,			// mov  ebp, esp
+	0x56,				// push esi
+	0x8b, 0x75, 0x08,	// mov  esi, dword ptr _data$[ebp]
 
-	data->ModuleHandle = data->LoadLibrary(data->DllName);
-	data->LastError = data->GetLastError();
+	0xff, 0x76, 0x08,	// push dword ptr [esi+8]
+	0x8b, 0x06,			// mov  eax, dword ptr [esi]
+	0xff, 0xd0,			// call eax
+	0x89, 0x46, 0x0c,	// mov  dword ptr [esi+12], eax
 
-}
+	0x8b, 0x46, 0x04,	// mov  eax, dword ptr [esi+4]
+	0xff, 0xd0,			// call eax
+	0x89, 0x46, 0x10,	// mov  dword ptr [esi+16], eax
 
-// This is just a dummy function used to determine size of RemoteLoadDllFunction code
-static void RemoteLoadDllFunctionEnd() {
-	return;
-}
+	0x5e,				// pop  esi
+	0x5d,				// pop  ebp
+	0xc3,				// ret  0
+};
 
 
 namespace syringe {
@@ -109,7 +122,7 @@ int Dll::Run() {
 
 
 	const size_t sizeData = utils::RoundToAlign(sizeof(LoadDllThreadData) + dll.size() + 1, 16);
-	const size_t sizeCode = reinterpret_cast<size_t>(RemoteLoadDllFunctionEnd) - reinterpret_cast<size_t>(RemoteLoadDllFunction);
+	const size_t sizeCode = sizeof(RemoteLoadDllFunctionCode);
 
 	std::shared_ptr<void> mem(
 			::VirtualAllocEx(proc.get(), nullptr, sizeData + sizeCode, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE),
@@ -149,7 +162,7 @@ int Dll::Run() {
 
 	std::cout << "Data written in remote process memory" << std::endl;
 
-	ret = ::WriteProcessMemory(proc.get(), memory + sizeData, RemoteLoadDllFunction, sizeCode, nullptr);
+	ret = ::WriteProcessMemory(proc.get(), memory + sizeData, RemoteLoadDllFunctionCode, sizeCode, nullptr);
 	if (!ret)
 		throw std::runtime_error("Error write to remote process memory");
 
